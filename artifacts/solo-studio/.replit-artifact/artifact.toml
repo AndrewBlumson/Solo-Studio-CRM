@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Solo Studio"
+description = "A practical command centre for independent makers and freelancers. Track leads, proposals, client projects, time, expenses and invoices, then turn finished work into a public portfolio and launch content."
+version = "1.0.0"
+id = "artifacts/solo-studio"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24152
+
+[services.development]
+run = "pnpm --filter @workspace/solo-studio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/solo-studio", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/solo-studio/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24152"
+BASE_PATH = "/"

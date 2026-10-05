@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#244B3F">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Offline | Solo Studio</title>
+    <style>
+      :root { color-scheme: light; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f4f1e8; color: #263b34; }
+      * { box-sizing: border-box; }
+      body { min-height: 100vh; min-height: 100dvh; margin: 0; display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
+      main { width: min(100%, 460px); padding: 30px; border: 1px solid #ded9cf; border-radius: 22px; background: #fffefa; box-shadow: 0 18px 55px rgba(38, 59, 52, .1); }
+      .brand-mark { display: block; width: 62px; height: 62px; margin-bottom: 24px; }
+      p.eyebrow { margin: 0 0 10px; color: #597366; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+      h1 { margin: 0; font-family: Georgia, serif; font-size: clamp(30px, 8vw, 42px); font-weight: 500; letter-spacing: -.04em; line-height: 1.08; }
+      p { color: #65716b; font-size: 15px; line-height: 1.65; }
+      .notice { margin: 20px 0; padding: 14px 15px; border: 1px solid #e7e1d5; border-radius: 12px; background: #f8f6f0; font-size: 13px; }
+      button { width: 100%; min-height: 50px; border: 0; border-radius: 11px; background: #244b3f; color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+      button:focus-visible { outline: 3px solid #c87759; outline-offset: 3px; }
+      @media (max-width: 420px) { main { padding: 24px 20px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <rect width="64" height="64" rx="15" fill="#F4F1E8"/>
+        <path d="M7 13L29 23V56L7 46V13Z" fill="#244B3F"/>
+        <path d="M57 13L35 23V56L57 46V13Z" fill="#C87759"/>
+        <path d="M12 17L27 24V48L12 41V17Z" fill="#376456"/>
+        <path d="M52 17L37 24V48L52 41V17Z" fill="#D38A6B"/>
+        <circle cx="32" cy="32" r="3.6" fill="#F4F1E8"/>
+        <path d="M23 47C23 41.477 26.582 38 32 38C37.418 38 41 41.477 41 47V49H23V47Z" fill="#F4F1E8"/>
+        <path d="M27 32H37" stroke="#F4F1E8" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <p class="eyebrow">Solo Studio</p>
+      <h1>Your studio is offline</h1>
+      <p>Reconnect to open your private workspace. Your client, project and finance records are loaded from your signed-in account and are not stored on this device for offline access.</p>
+      <div class="notice" id="connection-status" role="status">Check your connection, then try again.</div>
+      <button type="button" onclick="window.location.reload()">Try again</button>
+    </main>
+    <script>
+      window.addEventListener('online', function () {
+        document.getElementById('connection-status').textContent = 'You are back online. Reload Solo Studio to continue.';
+      });
+    </script>
+  </body>
+</html>

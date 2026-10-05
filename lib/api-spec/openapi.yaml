@@ -1,0 +1,536 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: studio
+    description: Private Solo Studio workspace operations
+  - name: email
+    description: Per-user mailbox connections and private mailbox insights
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /studio/workspace:
+    get:
+      operationId: getStudioWorkspace
+      tags: [studio]
+      summary: Read the signed-in user's workspace
+      responses:
+        "200":
+          description: The authenticated user's workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudioWorkspaceResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No workspace exists for this account yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    put:
+      operationId: saveStudioWorkspace
+      tags: [studio]
+      summary: Save the signed-in user's workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudioWorkspaceInput"
+      responses:
+        "200":
+          description: The saved workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudioWorkspaceResponse"
+        "400":
+          description: Invalid workspace data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: The workspace changed since it was loaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudioWorkspaceConflict"
+  /studio/legal-profile:
+    get:
+      operationId: getStudioLegalProfile
+      tags: [studio]
+      summary: Get the public legal profile shared by this Remix
+      responses:
+        "200":
+          description: Public company details and whether the signed-in account can manage them
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudioLegalProfileResponse"
+    put:
+      operationId: saveStudioLegalProfile
+      tags: [studio]
+      summary: Save the Remix-wide legal profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudioLegalProfileInput"
+      responses:
+        "200":
+          description: The saved public company details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudioLegalProfileResponse"
+        "400":
+          description: Invalid company details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: Another account manages this Remix's legal profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /email/connections:
+    get:
+      operationId: getEmailConnections
+      tags: [email]
+      summary: Get the signed-in user's mailbox connection status
+      responses:
+        "200":
+          description: Configured providers and this user's connected mailboxes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailConnectionsResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /email/connections/{provider}/authorization:
+    post:
+      operationId: createEmailAuthorization
+      tags: [email]
+      summary: Start an OAuth connection for one mailbox provider
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/EmailProvider"
+      responses:
+        "200":
+          description: Provider authorization URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailAuthorizationResponse"
+        "400":
+          description: Unsupported provider or invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Provider credentials or token encryption key are not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /email/connections/{provider}:
+    delete:
+      operationId: disconnectEmailConnection
+      tags: [email]
+      summary: Remove the signed-in user's stored mailbox connection
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/EmailProvider"
+      responses:
+        "204":
+          description: Connection removed
+        "400":
+          description: Unsupported provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /email/connections/{provider}/analysis-batch:
+    post:
+      operationId: analyzeEmailMailboxBatch
+      tags: [email]
+      summary: Analyse one page of the signed-in user's mailbox
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/EmailProvider"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailAnalysisBatchInput"
+      responses:
+        "200":
+          description: Contact and follow-up insights from one mailbox page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailAnalysisBatchResponse"
+        "400":
+          description: Invalid cursor or unsupported provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No connected mailbox exists for this provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: The provider could not complete the mailbox request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /email/oauth/google/callback:
+    get:
+      operationId: completeGoogleEmailAuthorization
+      tags: [email]
+      summary: Complete a Google OAuth authorization
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to Solo Studio Settings with a safe result code
+        "400":
+          description: Invalid OAuth response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /email/oauth/microsoft/callback:
+    get:
+      operationId: completeMicrosoftEmailAuthorization
+      tags: [email]
+      summary: Complete a Microsoft OAuth authorization
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to Solo Studio Settings with a safe result code
+        "400":
+          description: Invalid OAuth response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    StudioWorkspaceState:
+      type: object
+      additionalProperties: true
+    StudioWorkspaceInput:
+      type: object
+      additionalProperties: false
+      properties:
+        state:
+          $ref: "#/components/schemas/StudioWorkspaceState"
+        expectedVersion:
+          type: ["integer", "null"]
+          minimum: 1
+      required:
+        - state
+        - expectedVersion
+    StudioWorkspaceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        state:
+          $ref: "#/components/schemas/StudioWorkspaceState"
+        version:
+          type: integer
+          minimum: 1
+      required:
+        - state
+        - version
+    StudioWorkspaceConflict:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+        current:
+          $ref: "#/components/schemas/StudioWorkspaceResponse"
+      required: [error, current]
+    StudioLegalProfileInput:
+      type: object
+      additionalProperties: false
+      properties:
+        registeredName:
+          type: string
+          maxLength: 200
+        tradingName:
+          type: string
+          maxLength: 200
+        country:
+          type: string
+          maxLength: 120
+        registeredAddress:
+          type: string
+          maxLength: 1000
+        privacyEmail:
+          type: string
+          maxLength: 320
+        website:
+          type: string
+          maxLength: 500
+      required:
+        - registeredName
+        - tradingName
+        - country
+        - registeredAddress
+        - privacyEmail
+        - website
+    StudioLegalProfileResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        registeredName:
+          type: string
+        tradingName:
+          type: string
+        country:
+          type: string
+        registeredAddress:
+          type: string
+        privacyEmail:
+          type: string
+        website:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+          format: date-time
+        isComplete:
+          type: boolean
+        canEdit:
+          type: boolean
+      required:
+        - registeredName
+        - tradingName
+        - country
+        - registeredAddress
+        - privacyEmail
+        - website
+        - updatedAt
+        - isComplete
+        - canEdit
+    EmailProvider:
+      type: string
+      enum: [google, microsoft]
+    EmailProviderInfo:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          $ref: "#/components/schemas/EmailProvider"
+        configured:
+          type: boolean
+        redirectUri:
+          type: string
+      required: [provider, configured, redirectUri]
+    EmailConnection:
+      type: object
+      additionalProperties: false
+      properties:
+        provider:
+          $ref: "#/components/schemas/EmailProvider"
+        email:
+          type: string
+        connectedAt:
+          type: string
+          format: date-time
+      required: [provider, email, connectedAt]
+    EmailConnectionsResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailProviderInfo"
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailConnection"
+      required: [providers, connections]
+    EmailAuthorizationResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        authorizationUrl:
+          type: string
+          format: uri
+      required: [authorizationUrl]
+    EmailAnalysisSignal:
+      type: string
+      enum: [enquiry, budget, project, meeting, invoice, follow_up]
+    EmailAnalysisCandidate:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        messageCount:
+          type: integer
+          minimum: 1
+        lastMessageAt:
+          type: string
+          format: date-time
+        latestSubject:
+          type: string
+        signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailAnalysisSignal"
+      required: [email, name, messageCount, lastMessageAt, latestSubject, signals]
+    EmailAnalysisBatchInput:
+      type: object
+      additionalProperties: false
+      properties:
+        cursor:
+          type: ["string", "null"]
+    EmailAnalysisBatchResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailAnalysisCandidate"
+        cursor:
+          type: ["string", "null"]
+        scannedCount:
+          type: integer
+          minimum: 0
+        totalCount:
+          type: ["integer", "null"]
+          minimum: 0
+        complete:
+          type: boolean
+      required: [candidates, cursor, scannedCount, totalCount, complete]
+    ApiError:
+      type: object
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
