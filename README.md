@@ -1,5 +1,9 @@
 # Solo Studio
 
+[![Open in Replit](https://img.shields.io/badge/Open_in-Replit-F26207?style=for-the-badge&logo=replit&logoColor=white)](https://replit.com/github.com/AndrewBlumson/Solo-Studio-CRM)
+
+Click **[Open in Replit](https://replit.com/github.com/AndrewBlumson/Solo-Studio-CRM)** to import your own copy into your Replit account.
+
 Solo Studio is a private workspace for independent makers and freelancers to manage leads, clients, proposals, projects, tasks, time, invoices and expenses.
 
 Its installable PWA caches public app assets and an offline information page, not private CRM records.
