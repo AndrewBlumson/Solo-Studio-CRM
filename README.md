@@ -4,6 +4,8 @@
 
 Click **[Open in Replit](https://replit.com/github.com/AndrewBlumson/Solo-Studio-CRM)** to import your own copy into your Replit account.
 
+**This creates your own Replit app.** You can use and customise it in Replit without creating a GitHub repository first. If you later want to save your changes to GitHub, connect a repository in your own account using Replit's Git pane. The imported Git connection may initially point to this source repository. If you have already imported the app, you can change that connection without reimporting or discarding your work.
+
 Solo Studio is a private workspace for independent makers and freelancers to manage leads, clients, proposals, projects, tasks, time, invoices and expenses.
 
 Its installable PWA caches public app assets and an offline information page, not private CRM records.
