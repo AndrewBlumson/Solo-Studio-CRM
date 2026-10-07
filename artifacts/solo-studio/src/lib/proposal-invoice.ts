@@ -1,4 +1,12 @@
+import {
+  addCalendarDays,
+  normalizeLines,
+  type DocumentLine,
+} from "./studio-document.ts";
+
 type RecordItem = Record<string, any> & { id: string };
+
+const DEFAULT_DUE_DAYS = 14;
 
 export type ProposalInvoiceWorkspace = {
   invoices: RecordItem[];
@@ -38,6 +46,7 @@ export function prepareProposalInvoice(
   workspace: ProposalInvoiceWorkspace,
   issuedDate: string,
   createId: () => string,
+  options?: { defaultDueDays?: number },
 ): ProposalInvoiceResult {
   const linkedInvoice = workspace.invoices.find(
     (invoice) => invoice.sourceProposalId === proposal.id,
@@ -71,14 +80,44 @@ export function prepareProposalInvoice(
     };
   }
 
+  const id = createId();
+  const sourceLines = normalizeLines(proposal.lines);
+  const lines: DocumentLine[] = sourceLines.length
+    ? sourceLines.map((line, index) => ({
+        ...line,
+        id: `${id}-line-${index + 1}`,
+      }))
+    : [
+        {
+          id: `${id}-line-1`,
+          description: String(proposal.title || 'Proposal').trim() || 'Proposal',
+          quantity: 1,
+          unitAmountPence: Number(proposal.amountPence) || 0,
+        },
+      ];
+  const amountPence = sourceLines.length
+    ? lines.reduce(
+        (sum, line) => sum + Math.round(line.quantity * line.unitAmountPence),
+        0,
+      )
+    : Number(proposal.amountPence) || 0;
+  const requestedDays = options?.defaultDueDays;
+  const dueDays =
+    Number.isInteger(requestedDays) &&
+    requestedDays !== undefined &&
+    requestedDays >= 0 &&
+    requestedDays <= 365
+      ? requestedDays
+      : DEFAULT_DUE_DAYS;
   const invoice: RecordItem = {
-    id: createId(),
+    id,
     number: nextInvoiceNumber(workspace.invoices),
     clientId,
     projectId: '',
-    amountPence: Number(proposal.amountPence) || 0,
+    amountPence,
+    lines,
     issuedDate,
-    dueDate: '',
+    dueDate: addCalendarDays(issuedDate, dueDays),
     status: 'Draft',
     paidDate: '',
     sourceProposalId: proposal.id,

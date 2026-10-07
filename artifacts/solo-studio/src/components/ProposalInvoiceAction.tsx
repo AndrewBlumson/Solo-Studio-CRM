@@ -14,6 +14,7 @@ type ProposalInvoiceActionProps = {
   issuedDate: string;
   createId: () => string;
   notify?: (message: string) => void;
+  defaultDueDays?: number;
 };
 
 export function ProposalInvoiceAction({
@@ -24,6 +25,7 @@ export function ProposalInvoiceAction({
   issuedDate,
   createId,
   notify,
+  defaultDueDays,
 }: ProposalInvoiceActionProps) {
   const [error, setError] = useState('');
   const linkedInvoice = workspace.invoices.find(
@@ -37,6 +39,7 @@ export function ProposalInvoiceAction({
       workspace,
       issuedDate,
       createId,
+      { defaultDueDays },
     );
 
     if (result.kind === 'existing') {
