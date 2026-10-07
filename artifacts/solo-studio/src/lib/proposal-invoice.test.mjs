@@ -38,8 +38,16 @@ test('creates one correctly linked draft using the next invoice number', () => {
     clientId: 'client-1',
     projectId: '',
     amountPence: 287500,
+    lines: [
+      {
+        id: 'new-id-line-1',
+        description: 'Brand and website',
+        quantity: 1,
+        unitAmountPence: 287500,
+      },
+    ],
     issuedDate: '2026-10-05',
-    dueDate: '',
+    dueDate: '2026-10-19',
     status: 'Draft',
     paidDate: '',
     sourceProposalId: 'proposal-1',
@@ -121,4 +129,48 @@ test('reports a missing usable client or lead without creating a partial invoice
     clients: [],
     leads: [{ id: 'lead-1', name: '   ' }],
   });
+});
+
+test('copies proposal lines onto the draft and uses the private due-day setting', () => {
+  const result = prepareProposalInvoice(
+    {
+      ...proposal,
+      lines: [
+        {
+          id: 'proposal-line',
+          description: 'Brand system',
+          quantity: 1,
+          unitAmountPence: 200000,
+        },
+        {
+          id: 'proposal-line-2',
+          description: 'Website',
+          quantity: 1,
+          unitAmountPence: 87500,
+        },
+      ],
+    },
+    baseWorkspace(),
+    '2026-10-05',
+    () => 'invoice-from-lines',
+    { defaultDueDays: 7 },
+  );
+
+  assert.equal(result.kind, 'created');
+  assert.equal(result.invoice.dueDate, '2026-10-12');
+  assert.equal(result.invoice.amountPence, 287500);
+  assert.deepEqual(result.invoice.lines, [
+    {
+      id: 'invoice-from-lines-line-1',
+      description: 'Brand system',
+      quantity: 1,
+      unitAmountPence: 200000,
+    },
+    {
+      id: 'invoice-from-lines-line-2',
+      description: 'Website',
+      quantity: 1,
+      unitAmountPence: 87500,
+    },
+  ]);
 });
